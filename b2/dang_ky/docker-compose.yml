@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  react-dev-service:
+    build: .
+    container_name: react_dev
+    ports:
+      - "3000:5173" 
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_ENV=dev
+    profiles: ["dev"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"] # Sửa thành 5173 cho Vite
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - react-net
+
+  react-prod-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod 
+    container_name: react_prod
+    ports:
+      - "80:80" 
+    profiles: ["prod"]
+    restart: unless-stopped
+    networks:
+      - react-net
+
+  react-stg:
+    build: .
+    ports: 
+      - "3001:5173"
+    environment: 
+      - REACT_APP_ENV=staging
+    profiles: ["stg"]
+    restart: unless-stopped
+    networks:
+      - react-net
+
+networks:
+  react-net:
+    driver: bridge
+    name: myapp-network
